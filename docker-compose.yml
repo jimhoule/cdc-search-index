@@ -13,6 +13,15 @@ services:
       replicas: 1
     env_file: ./.env
 
+  elasticsearch:
+    image: elasticsearch:8.8.0
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+
   zookeeper:
     image: wurstmeister/zookeeper
     ports:
