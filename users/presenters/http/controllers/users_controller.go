@@ -1,6 +1,9 @@
 package controllers
 
 import (
+	"encoding/json"
+	"fmt"
+	"main/queue"
 	"main/router"
 	"main/router/utils"
 	"main/users/application/payloads"
@@ -11,6 +14,7 @@ import (
 
 type UsersController struct {
 	UsersService *services.UsersService
+	QueueProducerHandler *queue.ProducerHandler
 }
 
 func (uc *UsersController) GetAll(writer http.ResponseWriter, request *http.Request) {
@@ -53,6 +57,13 @@ func (uc *UsersController) Create(writer http.ResponseWriter, request *http.Requ
 	}
 
 	utils.WriteHttpResponse(writer, http.StatusCreated, user)
+
+	jsonEncodedUser, err := json.Marshal(user)
+	if err != nil {
+		fmt.Println("error sending created user to queue: ", err)
+	}
+
+	uc.QueueProducerHandler.SendMessage("users.created", "partition key", jsonEncodedUser)
 }
 
 func (uc *UsersController) Update(writer http.ResponseWriter, request *http.Request) {
@@ -75,6 +86,13 @@ func (uc *UsersController) Update(writer http.ResponseWriter, request *http.Requ
 	}
 
 	utils.WriteHttpResponse(writer, http.StatusOK, user)
+
+	jsonEncodedUser, err := json.Marshal(user)
+	if err != nil {
+		fmt.Println("error sending updated user to queue: ", err)
+	}
+
+	uc.QueueProducerHandler.SendMessage("users.updated", "partition key", jsonEncodedUser)
 }
 
 func (uc *UsersController) Delete(writer http.ResponseWriter, request *http.Request) {
@@ -87,4 +105,11 @@ func (uc *UsersController) Delete(writer http.ResponseWriter, request *http.Requ
 	}
 
 	utils.WriteHttpResponse(writer, http.StatusNoContent, nil)
+
+	jsonEncodedUserId, err := json.Marshal(id)
+	if err != nil {
+		fmt.Println("error sending deleted user id to queue: ", err)
+	}
+
+	uc.QueueProducerHandler.SendMessage("users.deleted", "partition key", jsonEncodedUserId)
 }

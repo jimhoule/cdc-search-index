@@ -1,6 +1,8 @@
 package users
 
 import (
+	"fmt"
+	"main/queue"
 	"main/router"
 	"main/users/application/services"
 	"main/users/domain/factories"
@@ -19,8 +21,14 @@ func GetService() *services.UsersService {
 }
 
 func Init(mainRouter *router.MainRouter) {
+	queueProducerHandler, err := queue.NewProducerHandler([]string{"localhost:9092"})
+	if err != nil {
+		fmt.Printf("error: %v", err)
+	}
+
 	usersController := &controllers.UsersController{
 		UsersService: GetService(),
+		QueueProducerHandler: &queueProducerHandler,
 	}
 
 	mainRouter.Get("/users", usersController.GetAll)
