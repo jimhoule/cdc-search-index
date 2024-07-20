@@ -2,15 +2,18 @@ package queue
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/IBM/sarama"
 )
 
 type ConsumerGroup = sarama.ConsumerGroup
 type ConsumerGroupSession = sarama.ConsumerGroupSession
+type ConsumerGroupClaim = sarama.ConsumerGroupClaim
 
 type ConsumerGroupHandler struct {
     ConsumerGroup ConsumerGroup
+    Handlers map[string]func(body []byte) (error)
 }
 
 func NewConsumerGroupHandler(addresses []string, id string) (ConsumerGroupHandler, error) {
@@ -57,18 +60,21 @@ func (*ConsumerGroupHandler) Cleanup(ConsumerGroupSession) error {
  *  - Once the Messages() channel is closed, the Handler must finish its processing
  *    loop and exit
  */
-func (cgh *ConsumerGroupHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+func (cgh *ConsumerGroupHandler) ConsumeClaim(session ConsumerGroupSession, claim ConsumerGroupClaim) error {
     for message := range claim.Messages() {
-        // userID := string(msg.Key)
-        // var notification models.Notification
-        // err := json.Unmarshal(msg.Value, &notification)
-        // if err != nil {
-        //     log.Printf("failed to unmarshal notification: %v", err)
-        //     continue
-        // }
-        // consumer.store.Add(userID, notification)
+        handler, ok := cgh.Handlers[string(message.Key)]
+        
+        // If not topic, continue
+        if !ok {
+            continue
+        }
 
-		// Marks message as consumed
+        // If topic, call associated handler
+        err := handler(message.Value)
+        if err != nil {
+            fmt.Println("error: ", err)
+        }
+        
         session.MarkMessage(message, "")
     }
 
