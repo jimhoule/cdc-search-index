@@ -39,7 +39,7 @@ func (sh *SearchHandler) CreateIndex() {
 	if err != nil {
 		fmt.Println("error: ", err)
 	}
-	dresponse.Body.Close()
+	defer response.Body.Close()
 }
 
 func (sh *SearchHandler) GetDocument(index string, id string) {
@@ -52,9 +52,13 @@ func (sh *SearchHandler) GetDocument(index string, id string) {
 	if err != nil {
 		fmt.Println("error: ", err)
 	}
+	defer response.Body.Close()
 
 	var result map[string]interface{}
-	json.NewDecoder(response.Body).Decode(&result)
+	err = json.NewDecoder(response.Body).Decode(&result)
+	if err != nil {
+		fmt.Println("error: ", err)
+	}
 
 	fmt.Println("document: ", result["_source"])
 }
@@ -69,15 +73,25 @@ func (sh *SearchHandler) Search(index string, queryType string, key string, valu
 		},
 	}
 
-	json.NewEncoder(&buffer).Encode(query)
+	err := json.NewEncoder(&buffer).Encode(query)
+	if err != nil {
+		fmt.Println("error: ", err)
+	}
 
-	response, _ := sh.Client.Search(
+	response, err := sh.Client.Search(
 		sh.Client.Search.WithIndex(index),
 		sh.Client.Search.WithBody(&buffer),
 	)
+	if err != nil {
+		fmt.Println("error: ", err)
+	}
+	defer response.Body.Close()
 
 	var result map[string]interface{}
-	json.NewDecoder(response.Body).Decode(&result)
+	err = json.NewDecoder(response.Body).Decode(&result)
+	if err != nil {
+		fmt.Println("error: ", err)
+	}
 
 	for _, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
 		document := hit.(map[string]interface{})["_source"].(map[string]interface{})
