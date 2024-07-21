@@ -1,77 +1,101 @@
 package repositories
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 )
 
-type FakeSearchRepository struct{}
+type FakeSearchRepository[T any] struct{}
 
-type Document struct{
-	Id string
-	Body struct{}
+type Document struct {
+	Id   string
+	Body any
 }
-var indices map[string][]*Document = map[string][]*Document{
+
+var documents map[string][]*Document = map[string][]*Document{
 	"users": {},
 }
 
 func ResetFakeSearchRepository() {
-	indices = map[string][]*Document{
+	documents = map[string][]*Document{
 		"users": {},
 	}
 }
 
-func (fsr *FakeSearchRepository) Create(index string, documentId string, body []byte) error {
-	_, ok := indices[index]
+func (fsr *FakeSearchRepository[T]) GetByDocumentId(index string, documentId string) (*T, error) {
+	_, ok := documents[index]
+	if !ok {
+		return nil, fmt.Errorf("index %s does not exist", index)
+	}
+
+	for _, document := range documents[index] {
+		if document.Id == documentId {
+			// NOTE: This transcoding trick allows us to use a generic type
+			var body T
+			var buffer bytes.Buffer
+			json.NewEncoder(&buffer).Encode(document.Body)
+			json.NewDecoder(&buffer).Decode(&body)
+
+			return &body, nil
+		}
+	}
+
+	return nil, nil
+}
+
+func (fsr *FakeSearchRepository[T]) Create(index string, documentId string, body []byte) error {
+	_, ok := documents[index]
 	if !ok {
 		return fmt.Errorf("index %s does not exist", index)
 	}
 
-	var decodedBody struct{}
+	var decodedBody map[string]any
 	err := json.Unmarshal(body, &decodedBody)
 	if err != nil {
 		return fmt.Errorf("could not unmarshall body")
 	}
 
 	document := &Document{
-		Id: documentId,
+		Id:   documentId,
 		Body: decodedBody,
 	}
-	indices[index] = append(indices[index], document)
+	documents[index] = append(documents[index], document)
 
 	return nil
 }
 
-func (fsr *FakeSearchRepository) Update(index string, documentId string, body []byte) error {
-	_, ok := indices[index]
+func (fsr *FakeSearchRepository[T]) Update(index string, documentId string, body []byte) error {
+	_, ok := documents[index]
 	if !ok {
 		return fmt.Errorf("index %s does not exist", index)
 	}
 
-	for _, document := range indices[index] {
+	for _, document := range documents[index] {
 		if document.Id == documentId {
-			var decodedBody struct{}
+			var decodedBody map[string]any
 			err := json.Unmarshal(body, &decodedBody)
 			if err != nil {
 				return fmt.Errorf("could not unmarshall body")
 			}
 
 			document.Body = decodedBody
+			break
 		}
 	}
 
 	return nil
 }
 
-func (fsr *FakeSearchRepository) Delete(index string, documentId string) error {
-	_, ok := indices[index]
+func (fsr *FakeSearchRepository[T]) Delete(index string, documentId string) error {
+	_, ok := documents[index]
 	if !ok {
 		return fmt.Errorf("index %s does not exist", index)
 	}
 
-	for documentIndex, document := range indices[index] {
+	for documentIndex, document := range documents[index] {
 		if document.Id == documentId {
-			indices[index] = append(indices[index][:documentIndex], indices[index][documentIndex + 1:]...)
+			documents[index] = append(documents[index][:documentIndex], documents[index][documentIndex+1:]...)
 			break
 		}
 	}

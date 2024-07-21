@@ -15,10 +15,10 @@ func main() {
 	mainRouter := router.Get()
 
 	users.Init(mainRouter)
-	search.Init(searchClient)
+	search.Init(mainRouter, searchClient)
 
 	server := &http.Server{
-		Addr: fmt.Sprintf(":%s", "3000"),
+		Addr:    fmt.Sprintf(":%s", "5000"),
 		Handler: mainRouter,
 	}
 

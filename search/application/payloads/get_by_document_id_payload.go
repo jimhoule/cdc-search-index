@@ -1,6 +1,6 @@
 package payloads
 
-type DeletePayload struct {
+type GetByDocumentIdPayload struct {
 	Index      string
 	DocumentId string
 }

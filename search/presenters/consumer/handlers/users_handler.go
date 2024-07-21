@@ -8,11 +8,11 @@ import (
 	"main/search/presenters/consumer/dtos"
 )
 
-type UsersHandler struct{
-	SearchService *services.SearchService
+type UsersHandler[T any] struct {
+	SearchService *services.SearchService[T]
 }
 
-func (uh *UsersHandler) Create(body []byte) error {
+func (uh *UsersHandler[T]) Create(body []byte) error {
 	// Gets body
 	var createUserDto dtos.CreateUserDto
 	err := json.Unmarshal(body, &createUserDto)
@@ -23,10 +23,11 @@ func (uh *UsersHandler) Create(body []byte) error {
 
 	// Creates user document
 	err = uh.SearchService.Create(&payloads.CreatePayload{
-		Index: "users",
+		Index:      "users",
 		DocumentId: createUserDto.Id,
-		Body: body,
+		Body:       body,
 	})
+
 	if err != nil {
 		fmt.Println("error: ", err)
 		return err
@@ -35,7 +36,7 @@ func (uh *UsersHandler) Create(body []byte) error {
 	return nil
 }
 
-func (uh *UsersHandler) Update(body []byte) error {
+func (uh *UsersHandler[T]) Update(body []byte) error {
 	// Gets body
 	var updateUserDto dtos.UpdateUserDto
 	err := json.Unmarshal(body, &updateUserDto)
@@ -46,9 +47,9 @@ func (uh *UsersHandler) Update(body []byte) error {
 
 	// Updates user document
 	err = uh.SearchService.Update(&payloads.UpdatePayload{
-		Index: "users",
+		Index:      "users",
 		DocumentId: updateUserDto.Id,
-		Body: body,
+		Body:       body,
 	})
 	if err != nil {
 		fmt.Println("error: ", err)
@@ -58,7 +59,7 @@ func (uh *UsersHandler) Update(body []byte) error {
 	return nil
 }
 
-func (uh *UsersHandler) Delete(body []byte) error {
+func (uh *UsersHandler[T]) Delete(body []byte) error {
 	// Gets body
 	var deleteUserDto dtos.DeleteUserDto
 	err := json.Unmarshal(body, &deleteUserDto)
@@ -69,7 +70,7 @@ func (uh *UsersHandler) Delete(body []byte) error {
 
 	// Deletes user document
 	err = uh.SearchService.Delete(&payloads.DeletePayload{
-		Index: "users",
+		Index:      "users",
 		DocumentId: deleteUserDto.Id,
 	})
 	if err != nil {

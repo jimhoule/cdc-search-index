@@ -5,11 +5,23 @@ import (
 	"main/search/application/ports"
 )
 
-type SearchService struct {
-	SearchRepository ports.SearchRepositoryPort
+type SearchService[T any] struct {
+	SearchRepository ports.SearchRepositoryPort[T]
 }
 
-func (ss *SearchService) Create(createPayload *payloads.CreatePayload) error {
+func (ss *SearchService[T]) GetByDocumentId(getByDocumentIdPayload *payloads.GetByDocumentIdPayload) (*T, error) {
+	body, err := ss.SearchRepository.GetByDocumentId(
+		getByDocumentIdPayload.Index,
+		getByDocumentIdPayload.DocumentId,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, err
+}
+
+func (ss *SearchService[T]) Create(createPayload *payloads.CreatePayload) error {
 	return ss.SearchRepository.Create(
 		createPayload.Index,
 		createPayload.DocumentId,
@@ -17,7 +29,7 @@ func (ss *SearchService) Create(createPayload *payloads.CreatePayload) error {
 	)
 }
 
-func (ss *SearchService) Update(updatePayload *payloads.UpdatePayload) error {
+func (ss *SearchService[T]) Update(updatePayload *payloads.UpdatePayload) error {
 	return ss.SearchRepository.Update(
 		updatePayload.Index,
 		updatePayload.DocumentId,
@@ -25,7 +37,7 @@ func (ss *SearchService) Update(updatePayload *payloads.UpdatePayload) error {
 	)
 }
 
-func (ss *SearchService) Delete(deletePayload *payloads.DeletePayload) error {
+func (ss *SearchService[T]) Delete(deletePayload *payloads.DeletePayload) error {
 	return ss.SearchRepository.Delete(
 		deletePayload.Index,
 		deletePayload.DocumentId,

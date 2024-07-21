@@ -8,11 +8,11 @@ import (
 	"main/searchclient"
 )
 
-type ElasticsearchSearchRepository struct{
+type ElasticsearchSearchRepository[T any] struct {
 	SearchClient *searchclient.SearchClient
 }
 
-func (esr *ElasticsearchSearchRepository) Search(index string, queryType string, key string, value string) {
+func (esr *ElasticsearchSearchRepository[T]) Search(index string, queryType string, key string, value string) ([]*T, error) {
 	// Creates request body
 	var buffer bytes.Buffer
 	query := map[string]interface{}{
@@ -26,6 +26,7 @@ func (esr *ElasticsearchSearchRepository) Search(index string, queryType string,
 	err := json.NewEncoder(&buffer).Encode(query)
 	if err != nil {
 		fmt.Println("error: ", err)
+		return nil, err
 	}
 
 	// Executes request
@@ -35,27 +36,32 @@ func (esr *ElasticsearchSearchRepository) Search(index string, queryType string,
 	)
 	if err != nil {
 		fmt.Println("error: ", err)
+		return nil, err
 	}
 	defer response.Body.Close()
 
 	// Gets response body
-	var responseBody map[string]interface{}
+	var responseBody map[string]any
 	err = json.NewDecoder(response.Body).Decode(&responseBody)
 	if err != nil {
 		fmt.Println("error: ", err)
+		return nil, err
 	}
 
-	//
-	for _, hit := range responseBody["hits"].(map[string]interface{})["hits"].([]interface{}) {
-		document := hit.(map[string]interface{})["_source"].(map[string]interface{})
-		fmt.Println("document: ", document)
+	// Gets slices of *T to return
+	bodies := []*T{}
+	for _, hit := range responseBody["hits"].(map[string]any)["hits"].([]any) {
+		body := hit.(map[string]any)["_source"].(*T)
+		bodies = append(bodies, body)
 	}
+
+	return bodies, nil
 }
 
-func (esr *ElasticsearchSearchRepository) GetById(index string, documentId string) (any, error) {
+func (esr *ElasticsearchSearchRepository[T]) GetByDocumentId(index string, documentId string) (*T, error) {
 	// Creates request
 	request := searchclient.GetRequest{
-		Index: index, 
+		Index:      index,
 		DocumentID: documentId,
 	}
 
@@ -67,18 +73,22 @@ func (esr *ElasticsearchSearchRepository) GetById(index string, documentId strin
 	defer response.Body.Close()
 
 	// Gets response body
-	var responseBody map[string]interface{}
+	var responseBody map[string]any
 	err = json.NewDecoder(response.Body).Decode(&responseBody)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Println("document: ", responseBody["_source"])
+	// NOTE: This transcoding trick allows us to use a generic type
+	var body T
+	var buffer bytes.Buffer
+	json.NewEncoder(&buffer).Encode(responseBody["_source"])
+	json.NewDecoder(&buffer).Decode(&body)
 
-	return "", nil
+	return &body, nil
 }
 
-func (esr *ElasticsearchSearchRepository) Create(index string, documentId string, body []byte) error {
+func (esr *ElasticsearchSearchRepository[T]) Create(index string, documentId string, body []byte) error {
 	// Creates request
 	request := searchclient.CreateRequest{
 		Index:      index,
@@ -95,7 +105,7 @@ func (esr *ElasticsearchSearchRepository) Create(index string, documentId string
 	return nil
 }
 
-func (esr *ElasticsearchSearchRepository) Update(index string, documentId string, body []byte) error {
+func (esr *ElasticsearchSearchRepository[T]) Update(index string, documentId string, body []byte) error {
 	// Creates request
 	request := searchclient.UpdateRequest{
 		Index:      index,
@@ -112,7 +122,7 @@ func (esr *ElasticsearchSearchRepository) Update(index string, documentId string
 	return nil
 }
 
-func (esr *ElasticsearchSearchRepository) Delete(index string, documentId string) error {
+func (esr *ElasticsearchSearchRepository[T]) Delete(index string, documentId string) error {
 	// Creates request
 	request := searchclient.DeleteRequest{
 		Index:      index,
