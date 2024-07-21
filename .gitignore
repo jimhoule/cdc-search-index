@@ -23,3 +23,6 @@
 
 # http files
 **/*.http
+
+# container volumes
+docker/volumes
