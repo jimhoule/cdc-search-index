@@ -1,18 +1,18 @@
 ### NOTE: To use this file VSC REST Client extension must be installed 
 
 ### Finds all Users
-GET http://localhost:3000/users
+GET http://localhost:5000/users
 
 ### Finds a User by id
-GET http://localhost:3000/users/<user-id>
+GET http://localhost:5000/users/<user-id>
 
 ### Creates a User
-POST http://localhost:3000/users
+POST http://localhost:5000/users
 Content-Type: application/json
 
 {
-    "firstname": "firstname",
-    "lastname": "lastname"
+    "firstname": "Marc",
+    "lastname": "Laurin"
 }
 
 ### Updates a User

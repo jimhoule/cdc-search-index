@@ -13,7 +13,7 @@ import (
 )
 
 type UsersController struct {
-	UsersService *services.UsersService
+	UsersService         *services.UsersService
 	QueueProducerHandler *queue.ProducerHandler
 }
 
@@ -49,7 +49,7 @@ func (uc *UsersController) Create(writer http.ResponseWriter, request *http.Requ
 
 	user, err := uc.UsersService.Create(&payloads.CreateUserPayload{
 		Firstname: createUserDto.Firstname,
-		LastName: createUserDto.Lastname,
+		LastName:  createUserDto.Lastname,
 	})
 	if err != nil {
 		utils.WriteHttpError(writer, http.StatusInternalServerError, err)
@@ -63,7 +63,7 @@ func (uc *UsersController) Create(writer http.ResponseWriter, request *http.Requ
 		fmt.Println("error sending created user to queue: ", err)
 	}
 
-	uc.QueueProducerHandler.SendMessage("users.created", "partition key", jsonEncodedUser)
+	uc.QueueProducerHandler.SendMessage("user.created", jsonEncodedUser)
 }
 
 func (uc *UsersController) Update(writer http.ResponseWriter, request *http.Request) {
@@ -78,7 +78,7 @@ func (uc *UsersController) Update(writer http.ResponseWriter, request *http.Requ
 
 	user, err := uc.UsersService.Update(id, &payloads.UpdateUserPayload{
 		Firstname: updateUserDto.Firstname,
-		LastName: updateUserDto.Lastname,
+		LastName:  updateUserDto.Lastname,
 	})
 	if err != nil {
 		utils.WriteHttpError(writer, http.StatusInternalServerError, err)
@@ -92,7 +92,7 @@ func (uc *UsersController) Update(writer http.ResponseWriter, request *http.Requ
 		fmt.Println("error sending updated user to queue: ", err)
 	}
 
-	uc.QueueProducerHandler.SendMessage("users.updated", "partition key", jsonEncodedUser)
+	uc.QueueProducerHandler.SendMessage("user.updated", jsonEncodedUser)
 }
 
 func (uc *UsersController) Delete(writer http.ResponseWriter, request *http.Request) {
@@ -111,5 +111,5 @@ func (uc *UsersController) Delete(writer http.ResponseWriter, request *http.Requ
 		fmt.Println("error sending deleted user id to queue: ", err)
 	}
 
-	uc.QueueProducerHandler.SendMessage("users.deleted", "partition key", jsonEncodedUserId)
+	uc.QueueProducerHandler.SendMessage("user.deleted", jsonEncodedUserId)
 }
