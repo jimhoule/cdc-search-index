@@ -30,7 +30,7 @@ func Get() (*Db, error) {
 			return nil, err
 		}
 
-		database, err := client.Database(context.Background(), "databse name goes here")
+		database, err := client.CreateDatabase(context.Background(), "cdc-search-index", &driver.CreateDatabaseOptions{})
 		if err != nil {
 			return nil, err
 		}
