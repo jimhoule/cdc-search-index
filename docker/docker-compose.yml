@@ -1,23 +1,25 @@
 version: '3'
 
 services:
-  application:
-    build:
-      context: ./
-      dockerfile: application.dockerfile
-    ports:
-      - 3000:3000
-    restart: always
-    deploy:
-      mode: replicated
-      replicas: 1
-    env_file: ./.env
+  # application:
+  #   build:
+  #     context: ../
+  #     dockerfile: ./docker/application.dockerfile
+  #   ports:
+  #     - 3000:3000
+  #   restart: always
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+  #   env_file: ../.env
 
   elasticsearch:
     image: elasticsearch:8.8.0
     ports:
       - 9200:9200
       - 9300:9300
+    volumes:
+      - ./volumes/elasticsearch:/usr/share/elasticsearch/data
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -33,6 +35,8 @@ services:
     image: wurstmeister/kafka
     ports:
       - 9092:9092
+    volumes:
+      - ./volumes/kafka:/kafka
     environment:
       KAFKA_ADVERTISED_HOST_NAME: localhost
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
