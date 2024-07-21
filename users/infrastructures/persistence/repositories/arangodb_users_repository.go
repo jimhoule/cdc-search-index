@@ -11,7 +11,7 @@ type ArangodbUsersRepository struct {
 }
 
 func (aur *ArangodbUsersRepository) GetAll() ([]*models.User, error) {
-	query := "FOR doc IN users RETURN doc"
+	query := "FOR user IN users RETURN { id, firstname, lastname }"
 	bindVars := map[string]any{}
 	
 	cursor, err:= aur.Db.Client.Query(context.Background(), query, bindVars)
@@ -36,7 +36,7 @@ func (aur *ArangodbUsersRepository) GetAll() ([]*models.User, error) {
 }
 
 func (aur *ArangodbUsersRepository) GetById(id string) (*models.User, error) {
-	query := "FOR doc IN users FILTER doc._key == @key RETURN doc"
+	query := "FOR user IN users FILTER user._key == @key RETURN { id, firstname, lastname }"
 	bindVars:= map[string]interface{}{
 		"key":id,
 	}
