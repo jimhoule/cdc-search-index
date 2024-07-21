@@ -8,14 +8,14 @@ import (
 	"github.com/elastic/go-elasticsearch/v8/esapi"
 )
 
-type Client = *elasticsearch.Client
+type Client = elasticsearch.Client
 type GetRequest = esapi.GetRequest
 type CreateRequest = esapi.IndexRequest
 type UpdateRequest = esapi.UpdateRequest
 type DeleteRequest = esapi.DeleteRequest
 
 type SearchClient struct {
-	Client Client
+	Client *Client
 }
 
 var searchClient *SearchClient
