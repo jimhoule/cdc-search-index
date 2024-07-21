@@ -7,31 +7,31 @@ import (
 	"github.com/IBM/sarama"
 )
 
+type Handler = func(body []byte) error
 type ConsumerGroup = sarama.ConsumerGroup
 type ConsumerGroupSession = sarama.ConsumerGroupSession
 type ConsumerGroupClaim = sarama.ConsumerGroupClaim
 
 type ConsumerGroupHandler struct {
-    ConsumerGroup ConsumerGroup
-    Handlers map[string]func(body []byte) (error)
+	ConsumerGroup ConsumerGroup
+	Handlers      map[string]Handler
 }
 
 func NewConsumerGroupHandler(addresses []string, id string) (ConsumerGroupHandler, error) {
-    consumerGroupHandler := ConsumerGroupHandler{}
+	consumerGroupHandler := ConsumerGroupHandler{}
 
 	config := sarama.NewConfig()
+	config.Consumer.Offsets.AutoCommit.Enable = false
 	config.Consumer.Return.Errors = true
 
+	consumerGroup, err := sarama.NewConsumerGroup(addresses, id, config)
+	if err != nil {
+		return consumerGroupHandler, err
+	}
 
-    consumerGroup, err := sarama.NewConsumerGroup(addresses, id, config)
-    if err != nil {
-        return consumerGroupHandler, err
-    }
-	defer consumerGroup.Close()
+	consumerGroupHandler.ConsumerGroup = consumerGroup
 
-    consumerGroupHandler.ConsumerGroup = consumerGroup
-
-    return consumerGroupHandler, nil
+	return consumerGroupHandler, nil
 }
 
 /**
@@ -39,14 +39,14 @@ func NewConsumerGroupHandler(addresses []string, id string) (ConsumerGroupHandle
  *  - Satisfies the sarama ConsumerGroupHandler interface
  *  - Runs at the beginning of a new session, before ConsumeClaim
  */
-func (*ConsumerGroupHandler) Setup(ConsumerGroupSession) error   { 
+func (*ConsumerGroupHandler) Setup(ConsumerGroupSession) error {
 	return nil
 }
 
 /**
  * NOTES:
  *  - Satisfies the sarama ConsumerGroupHandler interface
- *  - Runs at the end of a session, once all ConsumeClaim goroutines have exited but before the 
+ *  - Runs at the end of a session, once all ConsumeClaim goroutines have exited but before the
  *    offsets are committed for the very last time
  */
 func (*ConsumerGroupHandler) Cleanup(ConsumerGroupSession) error {
@@ -61,24 +61,24 @@ func (*ConsumerGroupHandler) Cleanup(ConsumerGroupSession) error {
  *    loop and exit
  */
 func (cgh *ConsumerGroupHandler) ConsumeClaim(session ConsumerGroupSession, claim ConsumerGroupClaim) error {
-    for message := range claim.Messages() {
-        handler, ok := cgh.Handlers[string(message.Key)]
-        
-        // If not topic, continue
-        if !ok {
-            continue
-        }
+	for message := range claim.Messages() {
+		handler, ok := cgh.Handlers[message.Topic]
 
-        // If topic, call associated handler
-        err := handler(message.Value)
-        if err != nil {
-            fmt.Println("error: ", err)
-        }
-        
-        session.MarkMessage(message, "")
-    }
+		// If not topic, continue
+		if !ok {
+			continue
+		}
 
-    return nil
+		// If topic, call associated handler
+		err := handler(message.Value)
+		if err != nil {
+			fmt.Println("error: ", err)
+		}
+
+		session.MarkMessage(message, "")
+	}
+
+	return nil
 }
 
 /**
@@ -87,10 +87,10 @@ func (cgh *ConsumerGroupHandler) ConsumeClaim(session ConsumerGroupSession, clai
  *  - Starts listening for incoming messages
  */
 func (cgh *ConsumerGroupHandler) Listen(topics []string) error {
-    for {
-        err := cgh.ConsumerGroup.Consume(context.Background(), topics, cgh)
-        if err != nil {
-            return err
-        }
-    }
+	for {
+		err := cgh.ConsumerGroup.Consume(context.Background(), topics, cgh)
+		if err != nil {
+			return err
+		}
+	}
 }
