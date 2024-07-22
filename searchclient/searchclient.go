@@ -22,7 +22,11 @@ var searchClient *SearchClient
 
 func Get() *SearchClient {
 	if searchClient == nil {
-		esClient, err := elasticsearch.NewDefaultClient()
+		esClient, err := elasticsearch.NewClient(elasticsearch.Config{
+			Addresses: []string{
+				fmt.Sprintf("%s:%s", os.Getenv("SEARCH_CLIENT_URL"), os.Getenv("SEARCH_CLIENT_PORT")),
+			},
+		})
 		if err != nil {
 			fmt.Println("error creating search client: ", err)
 			os.Exit(1)
