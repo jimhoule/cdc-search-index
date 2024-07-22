@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"fmt"
 	"main/database"
 	"main/users/domain/models"
 )
@@ -11,10 +12,10 @@ type ArangodbUsersRepository struct {
 }
 
 func (aur *ArangodbUsersRepository) GetAll() ([]*models.User, error) {
-	query := "FOR user IN users RETURN { id, firstname, lastname }"
+	query := "FOR user IN users RETURN { id: user.id, firstname: user.firstname, lastname: user.lastname }"
 	bindVars := map[string]any{}
-	
-	cursor, err:= aur.Db.Client.Query(context.Background(), query, bindVars)
+
+	cursor, err := aur.Db.Client.Query(context.Background(), query, bindVars)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +24,7 @@ func (aur *ArangodbUsersRepository) GetAll() ([]*models.User, error) {
 	users := []*models.User{}
 	for cursor.HasMore() {
 		user := &models.User{}
-		
+
 		_, err := cursor.ReadDocument(context.Background(), &user)
 		if err != nil {
 			return nil, err
@@ -36,9 +37,9 @@ func (aur *ArangodbUsersRepository) GetAll() ([]*models.User, error) {
 }
 
 func (aur *ArangodbUsersRepository) GetById(id string) (*models.User, error) {
-	query := "FOR user IN users FILTER user._key == @key RETURN { id, firstname, lastname }"
-	bindVars:= map[string]interface{}{
-		"key":id,
+	query := "FOR user IN users FILTER user._key == @key RETURN { id: user.id, firstname: user.firstname, lastname: user.lastname }"
+	bindVars := map[string]interface{}{
+		"key": id,
 	}
 
 	cursor, err := aur.Db.Client.Query(context.Background(), query, bindVars)
@@ -51,20 +52,21 @@ func (aur *ArangodbUsersRepository) GetById(id string) (*models.User, error) {
 	for cursor.HasMore() {
 		_, err := cursor.ReadDocument(context.Background(), &user)
 		if err != nil {
+			fmt.Println("test")
 			return nil, err
 		}
 	}
-	
+
 	return user, nil
 }
 
 func (aur *ArangodbUsersRepository) Create(user *models.User) (*models.User, error) {
 	query := "INSERT { _key: @key, id: @id, firstname: @firstname, lastname: @lastname } INTO users"
 	bindVars := map[string]any{
-		"key": user.Id,
-		"id": user.Id,
+		"key":       user.Id,
+		"id":        user.Id,
 		"firstname": user.Firstname,
-		"lastname": user.LastName,
+		"lastname":  user.LastName,
 	}
 
 	_, err := aur.Db.Client.Query(context.Background(), query, bindVars)
@@ -76,11 +78,11 @@ func (aur *ArangodbUsersRepository) Create(user *models.User) (*models.User, err
 }
 
 func (aur *ArangodbUsersRepository) Update(updatedUser *models.User) (*models.User, error) {
-	query := "UPDATE @key WITH { firstname: @firstname, lastname: @lastname }"
+	query := "UPDATE @key WITH { firstname: @firstname, lastname: @lastname } IN users"
 	bindVars := map[string]any{
-		"key": updatedUser.Id,
+		"key":       updatedUser.Id,
 		"firstname": updatedUser.Firstname,
-		"lastname": updatedUser.LastName,
+		"lastname":  updatedUser.LastName,
 	}
 
 	_, err := aur.Db.Client.Query(context.Background(), query, bindVars)

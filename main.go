@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"main/database"
 	"main/router"
 	"main/search"
 	"main/searchclient"
@@ -11,10 +12,11 @@ import (
 )
 
 func main() {
-	searchClient := searchclient.Get()
+	db := database.Get()
 	mainRouter := router.Get()
+	searchClient := searchclient.Get()
 
-	users.Init(mainRouter)
+	users.Init(mainRouter, db)
 	search.Init(mainRouter, searchClient)
 
 	server := &http.Server{

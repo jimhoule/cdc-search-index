@@ -2,6 +2,7 @@ package users
 
 import (
 	"fmt"
+	"main/database"
 	"main/queue"
 	"main/router"
 	"main/users/application/services"
@@ -11,23 +12,25 @@ import (
 	"main/uuid"
 )
 
-func GetService() *services.UsersService {
+func GetService(db *database.Db) *services.UsersService {
 	return &services.UsersService{
 		UsersFactory: &factories.UsersFactory{
 			UuidService: uuid.GetService(),
 		},
-		UsersRepository: &repositories.FakeUsersRepository{},
+		UsersRepository: &repositories.ArangodbUsersRepository{
+			Db: db,
+		},
 	}
 }
 
-func Init(mainRouter *router.MainRouter) {
+func Init(mainRouter *router.MainRouter, db *database.Db) {
 	queueProducerHandler, err := queue.NewProducerHandler([]string{"localhost:9092"})
 	if err != nil {
 		fmt.Printf("error: %v", err)
 	}
 
 	usersController := &controllers.UsersController{
-		UsersService: GetService(),
+		UsersService:         GetService(db),
 		QueueProducerHandler: &queueProducerHandler,
 	}
 
