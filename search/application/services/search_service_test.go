@@ -8,23 +8,23 @@ import (
 	"testing"
 )
 
-func getTestContext() (*SearchService[views.UserView], *views.UserView, func(), func() (error)) {
+func getTestContext() (*SearchService[views.UserView], *views.UserView, func(), func() (*views.UserView, error)) {
 	searchService := &SearchService[views.UserView]{
 		SearchRepository: &repositories.FakeSearchRepository[views.UserView]{},
 	}
 
 	userView := &views.UserView{
-		Id: "dummyDocumentId",
+		Id:        "dummyDocumentId",
 		Firstname: "dummy firstname",
-		Lastname: "dummy lastname",
+		Lastname:  "dummy lastname",
 	}
 	body, _ := json.Marshal(userView)
 
-	create := func() (error) {
+	create := func() (*views.UserView, error) {
 		return searchService.Create(&payloads.CreatePayload{
-			Index: "users",
+			Index:      "users",
 			DocumentId: userView.Id,
-			Body: body,
+			Body:       body,
 		})
 	}
 
@@ -35,7 +35,7 @@ func TestCreateSearchService(t *testing.T) {
 	_, _, reset, create := getTestContext()
 	defer reset()
 
-	err := create()
+	_, err := create()
 	if err != nil {
 		t.Errorf("Expected to create a Document but got %v", err)
 		return
@@ -49,7 +49,7 @@ func TestGetDocumentByIdService(t *testing.T) {
 	create()
 
 	view, err := searchService.GetByDocumentId(&payloads.GetByDocumentIdPayload{
-		Index: "users",
+		Index:      "users",
 		DocumentId: userView.Id,
 	})
 	if err != nil {
@@ -70,16 +70,16 @@ func TestUpdateSearchService(t *testing.T) {
 	create()
 
 	updatedUserView := &views.UserView{
-		Id: userView.Id,
+		Id:        userView.Id,
 		Firstname: "Updated dummy firstname",
-		Lastname: userView.Lastname,
+		Lastname:  userView.Lastname,
 	}
 	body, _ := json.Marshal(updatedUserView)
 
-	err := searchService.Update(&payloads.UpdatePayload{
-		Index: "users",
+	_, err := searchService.Update(&payloads.UpdatePayload{
+		Index:      "users",
 		DocumentId: userView.Id,
-		Body: body,
+		Body:       body,
 	})
 	if err != nil {
 		t.Errorf("Expected User but got %v", err)
@@ -93,8 +93,8 @@ func TestDeleteUserService(t *testing.T) {
 
 	create()
 
-	err := searchService.Delete(&payloads.DeletePayload{
-		Index: "users",
+	_, err := searchService.Delete(&payloads.DeletePayload{
+		Index:      "users",
 		DocumentId: userView.Id,
 	})
 	if err != nil {

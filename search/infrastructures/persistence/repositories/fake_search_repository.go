@@ -44,16 +44,16 @@ func (fsr *FakeSearchRepository[T]) GetByDocumentId(index string, documentId str
 	return nil, nil
 }
 
-func (fsr *FakeSearchRepository[T]) Create(index string, documentId string, body []byte) error {
+func (fsr *FakeSearchRepository[T]) Create(index string, documentId string, body []byte) (*T, error) {
 	_, ok := documents[index]
 	if !ok {
-		return fmt.Errorf("index %s does not exist", index)
+		return nil, fmt.Errorf("index %s does not exist", index)
 	}
 
 	var decodedBody map[string]any
 	err := json.Unmarshal(body, &decodedBody)
 	if err != nil {
-		return fmt.Errorf("could not unmarshall body")
+		return nil, fmt.Errorf("could not unmarshall body")
 	}
 
 	document := &Document{
@@ -62,13 +62,13 @@ func (fsr *FakeSearchRepository[T]) Create(index string, documentId string, body
 	}
 	documents[index] = append(documents[index], document)
 
-	return nil
+	return nil, nil
 }
 
-func (fsr *FakeSearchRepository[T]) Update(index string, documentId string, body []byte) error {
+func (fsr *FakeSearchRepository[T]) Update(index string, documentId string, body []byte) (*T, error) {
 	_, ok := documents[index]
 	if !ok {
-		return fmt.Errorf("index %s does not exist", index)
+		return nil, fmt.Errorf("index %s does not exist", index)
 	}
 
 	for _, document := range documents[index] {
@@ -76,7 +76,7 @@ func (fsr *FakeSearchRepository[T]) Update(index string, documentId string, body
 			var decodedBody map[string]any
 			err := json.Unmarshal(body, &decodedBody)
 			if err != nil {
-				return fmt.Errorf("could not unmarshall body")
+				return nil, fmt.Errorf("could not unmarshall body")
 			}
 
 			document.Body = decodedBody
@@ -84,13 +84,13 @@ func (fsr *FakeSearchRepository[T]) Update(index string, documentId string, body
 		}
 	}
 
-	return nil
+	return nil, nil
 }
 
-func (fsr *FakeSearchRepository[T]) Delete(index string, documentId string) error {
+func (fsr *FakeSearchRepository[T]) Delete(index string, documentId string) (string, error) {
 	_, ok := documents[index]
 	if !ok {
-		return fmt.Errorf("index %s does not exist", index)
+		return "", fmt.Errorf("index %s does not exist", index)
 	}
 
 	for documentIndex, document := range documents[index] {
@@ -100,5 +100,5 @@ func (fsr *FakeSearchRepository[T]) Delete(index string, documentId string) erro
 		}
 	}
 
-	return nil
+	return documentId, nil
 }

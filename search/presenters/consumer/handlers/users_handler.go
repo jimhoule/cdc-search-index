@@ -22,7 +22,7 @@ func (uh *UsersHandler[T]) Create(body []byte) error {
 	}
 
 	// Creates user document
-	err = uh.SearchService.Create(&payloads.CreatePayload{
+	_, err = uh.SearchService.Create(&payloads.CreatePayload{
 		Index:      "users",
 		DocumentId: createUserDto.Id,
 		Body:       body,
@@ -46,7 +46,7 @@ func (uh *UsersHandler[T]) Update(body []byte) error {
 	}
 
 	// Updates user document
-	err = uh.SearchService.Update(&payloads.UpdatePayload{
+	_, err = uh.SearchService.Update(&payloads.UpdatePayload{
 		Index:      "users",
 		DocumentId: updateUserDto.Id,
 		Body:       body,
@@ -69,7 +69,7 @@ func (uh *UsersHandler[T]) Delete(body []byte) error {
 	}
 
 	// Deletes user document
-	err = uh.SearchService.Delete(&payloads.DeletePayload{
+	_, err = uh.SearchService.Delete(&payloads.DeletePayload{
 		Index:      "users",
 		DocumentId: deletedUserId,
 	})

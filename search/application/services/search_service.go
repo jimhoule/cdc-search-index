@@ -21,7 +21,7 @@ func (ss *SearchService[T]) GetByDocumentId(getByDocumentIdPayload *payloads.Get
 	return body, err
 }
 
-func (ss *SearchService[T]) Create(createPayload *payloads.CreatePayload) error {
+func (ss *SearchService[T]) Create(createPayload *payloads.CreatePayload) (*T, error) {
 	return ss.SearchRepository.Create(
 		createPayload.Index,
 		createPayload.DocumentId,
@@ -29,7 +29,7 @@ func (ss *SearchService[T]) Create(createPayload *payloads.CreatePayload) error 
 	)
 }
 
-func (ss *SearchService[T]) Update(updatePayload *payloads.UpdatePayload) error {
+func (ss *SearchService[T]) Update(updatePayload *payloads.UpdatePayload) (*T, error) {
 	return ss.SearchRepository.Update(
 		updatePayload.Index,
 		updatePayload.DocumentId,
@@ -37,7 +37,7 @@ func (ss *SearchService[T]) Update(updatePayload *payloads.UpdatePayload) error 
 	)
 }
 
-func (ss *SearchService[T]) Delete(deletePayload *payloads.DeletePayload) error {
+func (ss *SearchService[T]) Delete(deletePayload *payloads.DeletePayload) (string, error) {
 	return ss.SearchRepository.Delete(
 		deletePayload.Index,
 		deletePayload.DocumentId,

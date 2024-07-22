@@ -12,9 +12,8 @@ type ElasticsearchSearchRepository[T any] struct {
 	SearchClient *searchclient.SearchClient
 }
 
-func (esr *ElasticsearchSearchRepository[T]) Search(index string, queryType string, key string, value string) ([]*T, error) {
+func (esr *ElasticsearchSearchRepository[T]) GetDocuments(index string, queryType string, key string, value string) ([]*T, error) {
 	// Creates request body
-	var buffer bytes.Buffer
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			queryType: map[string]interface{}{
@@ -23,6 +22,7 @@ func (esr *ElasticsearchSearchRepository[T]) Search(index string, queryType stri
 		},
 	}
 
+	var buffer bytes.Buffer
 	err := json.NewEncoder(&buffer).Encode(query)
 	if err != nil {
 		fmt.Println("error: ", err)
@@ -51,7 +51,10 @@ func (esr *ElasticsearchSearchRepository[T]) Search(index string, queryType stri
 	// Gets slices of *T to return
 	bodies := []*T{}
 	for _, hit := range responseBody["hits"].(map[string]any)["hits"].([]any) {
-		body := hit.(map[string]any)["_source"].(*T)
+		//body := hit.(map[string]any)["_source"].(*T)
+		var body *T
+		transcode(hit.(map[string]any)["_source"], body)
+
 		bodies = append(bodies, body)
 	}
 
@@ -79,18 +82,13 @@ func (esr *ElasticsearchSearchRepository[T]) GetByDocumentId(index string, docum
 		return nil, err
 	}
 
-	// NOTE: This transcoding trick allows us to use a generic type
-	// var body T
-	// var buffer bytes.Buffer
-	// json.NewEncoder(&buffer).Encode(responseBody["_source"])
-	// json.NewDecoder(&buffer).Decode(&body)
-	var body T
-	transcode(responseBody["_source"], &body)
+	var view T
+	transcode(responseBody["_source"], &view)
 
-	return &body, nil
+	return &view, nil
 }
 
-func (esr *ElasticsearchSearchRepository[T]) Create(index string, documentId string, body []byte) error {
+func (esr *ElasticsearchSearchRepository[T]) Create(index string, documentId string, body []byte) (*T, error) {
 	// Creates request
 	request := searchclient.CreateRequest{
 		Index:      index,
@@ -101,30 +99,36 @@ func (esr *ElasticsearchSearchRepository[T]) Create(index string, documentId str
 	// Executes request
 	_, err := request.Do(context.Background(), esr.SearchClient.Client)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	var view T
+	json.Unmarshal(body, &view)
+
+	return &view, nil
 }
 
-func (esr *ElasticsearchSearchRepository[T]) Update(index string, documentId string, body []byte) error {
+func (esr *ElasticsearchSearchRepository[T]) Update(index string, documentId string, body []byte) (*T, error) {
 	// Creates request
 	request := searchclient.UpdateRequest{
 		Index:      index,
 		DocumentID: documentId,
-		Body:       bytes.NewReader(body),
+		Body:       bytes.NewReader([]byte(fmt.Sprintf(`{ "doc": %s }`, body))),
 	}
 
 	// Executes request
 	_, err := request.Do(context.Background(), esr.SearchClient.Client)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	var view T
+	json.Unmarshal(body, &view)
+
+	return &view, nil
 }
 
-func (esr *ElasticsearchSearchRepository[T]) Delete(index string, documentId string) error {
+func (esr *ElasticsearchSearchRepository[T]) Delete(index string, documentId string) (string, error) {
 	// Creates request
 	request := searchclient.DeleteRequest{
 		Index:      index,
@@ -134,10 +138,10 @@ func (esr *ElasticsearchSearchRepository[T]) Delete(index string, documentId str
 	// Executes request
 	_, err := request.Do(context.Background(), esr.SearchClient.Client)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return documentId, nil
 }
 
 func transcode(in any, out any) {
