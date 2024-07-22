@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 )
@@ -24,19 +23,16 @@ func ResetFakeSearchRepository() {
 }
 
 func (fsr *FakeSearchRepository[T]) GetByDocumentId(index string, documentId string) (*T, error) {
+	// Checks if index exists
 	_, ok := documents[index]
 	if !ok {
 		return nil, fmt.Errorf("index %s does not exist", index)
 	}
 
 	for _, document := range documents[index] {
+		// Checks if document exists
 		if document.Id == documentId {
-			// NOTE: This transcoding trick allows us to use a generic type
-			var body T
-			var buffer bytes.Buffer
-			json.NewEncoder(&buffer).Encode(document.Body)
-			json.NewDecoder(&buffer).Decode(&body)
-
+			body := document.Body.(T)
 			return &body, nil
 		}
 	}
@@ -45,12 +41,13 @@ func (fsr *FakeSearchRepository[T]) GetByDocumentId(index string, documentId str
 }
 
 func (fsr *FakeSearchRepository[T]) Create(index string, documentId string, body []byte) (*T, error) {
+	// Checks if index exists
 	_, ok := documents[index]
 	if !ok {
 		return nil, fmt.Errorf("index %s does not exist", index)
 	}
 
-	var decodedBody map[string]any
+	var decodedBody T
 	err := json.Unmarshal(body, &decodedBody)
 	if err != nil {
 		return nil, fmt.Errorf("could not unmarshall body")
@@ -62,43 +59,47 @@ func (fsr *FakeSearchRepository[T]) Create(index string, documentId string, body
 	}
 	documents[index] = append(documents[index], document)
 
-	return nil, nil
+	return &decodedBody, nil
 }
 
 func (fsr *FakeSearchRepository[T]) Update(index string, documentId string, body []byte) (*T, error) {
+	// Checks if index exists
 	_, ok := documents[index]
 	if !ok {
 		return nil, fmt.Errorf("index %s does not exist", index)
 	}
 
 	for _, document := range documents[index] {
+		// Checks if document exists
 		if document.Id == documentId {
-			var decodedBody map[string]any
+			var decodedBody T
 			err := json.Unmarshal(body, &decodedBody)
 			if err != nil {
 				return nil, fmt.Errorf("could not unmarshall body")
 			}
 
 			document.Body = decodedBody
-			break
+			return &decodedBody, nil
 		}
 	}
 
-	return nil, nil
+	return nil, fmt.Errorf("document with id %s does not exist", documentId)
 }
 
 func (fsr *FakeSearchRepository[T]) Delete(index string, documentId string) (string, error) {
+	// Checks if index exists
 	_, ok := documents[index]
 	if !ok {
 		return "", fmt.Errorf("index %s does not exist", index)
 	}
 
 	for documentIndex, document := range documents[index] {
+		// Checks if document exists
 		if document.Id == documentId {
 			documents[index] = append(documents[index][:documentIndex], documents[index][documentIndex+1:]...)
-			break
+			return documentId, nil
 		}
 	}
 
-	return documentId, nil
+	return documentId, fmt.Errorf("document with id %s does not exist", documentId)
 }

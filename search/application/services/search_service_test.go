@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func getTestContext() (*SearchService[views.UserView], *views.UserView, func(), func() (*views.UserView, error)) {
+func getTestContext() (*SearchService[views.UserView], func(), func() (*views.UserView, error)) {
 	searchService := &SearchService[views.UserView]{
 		SearchRepository: &repositories.FakeSearchRepository[views.UserView]{},
 	}
@@ -28,77 +28,85 @@ func getTestContext() (*SearchService[views.UserView], *views.UserView, func(), 
 		})
 	}
 
-	return searchService, userView, repositories.ResetFakeSearchRepository, create
+	return searchService, repositories.ResetFakeSearchRepository, create
 }
 
 func TestCreateSearchService(t *testing.T) {
-	_, _, reset, create := getTestContext()
+	_, reset, create := getTestContext()
 	defer reset()
 
 	_, err := create()
 	if err != nil {
-		t.Errorf("Expected to create a Document but got %v", err)
+		t.Errorf("Expected to create a UserView but got %v", err)
 		return
 	}
 }
 
-func TestGetDocumentByIdService(t *testing.T) {
-	searchService, userView, reset, create := getTestContext()
+func TestGetDocumentByIdSearchService(t *testing.T) {
+	searchService, reset, create := getTestContext()
 	defer reset()
 
-	create()
+	newUserView, _ := create()
 
-	view, err := searchService.GetByDocumentId(&payloads.GetByDocumentIdPayload{
+	userView, err := searchService.GetByDocumentId(&payloads.GetByDocumentIdPayload{
 		Index:      "users",
-		DocumentId: userView.Id,
+		DocumentId: newUserView.Id,
 	})
 	if err != nil {
-		t.Errorf("Expected to get a User View by document id but got %v", err)
+		t.Errorf("Expected to get a UserView by document id but got %v", err)
 		return
 	}
 
-	if *userView != *view {
-		t.Errorf("Expected View to be equal to User View but got %v", view)
+	if *newUserView != *userView {
+		t.Errorf("Expected UserView to be equal to NewUserView but got %v", userView)
 		return
 	}
 }
 
 func TestUpdateSearchService(t *testing.T) {
-	searchService, userView, reset, create := getTestContext()
+	searchService, reset, create := getTestContext()
 	defer reset()
 
-	create()
+	newUserView, _ := create()
 
 	updatedUserView := &views.UserView{
-		Id:        userView.Id,
+		Id:        newUserView.Id,
 		Firstname: "Updated dummy firstname",
-		Lastname:  userView.Lastname,
+		Lastname:  newUserView.Lastname,
 	}
 	body, _ := json.Marshal(updatedUserView)
 
-	_, err := searchService.Update(&payloads.UpdatePayload{
+	userView, err := searchService.Update(&payloads.UpdatePayload{
 		Index:      "users",
-		DocumentId: userView.Id,
+		DocumentId: newUserView.Id,
 		Body:       body,
 	})
 	if err != nil {
-		t.Errorf("Expected User but got %v", err)
+		t.Errorf("Expected UserView but got %v", err)
 		return
+	}
+
+	if userView.Firstname != updatedUserView.Firstname {
+		t.Errorf("Expected UserView firstname to equal UpdatedUserView firstname but got %s", userView.Firstname)
 	}
 }
 
 func TestDeleteUserService(t *testing.T) {
-	searchService, userView, reset, create := getTestContext()
+	searchService, reset, create := getTestContext()
 	defer reset()
 
-	create()
+	newUserView, _ := create()
 
-	_, err := searchService.Delete(&payloads.DeletePayload{
+	userViewId, err := searchService.Delete(&payloads.DeletePayload{
 		Index:      "users",
-		DocumentId: userView.Id,
+		DocumentId: newUserView.Id,
 	})
 	if err != nil {
-		t.Errorf("Expected User id but got %v", err)
+		t.Errorf("Expected UserView id but got %v", err)
 		return
+	}
+
+	if newUserView.Id != userViewId {
+		t.Errorf("Expected NewUserView id to equal UserView id but got %s", newUserView.Id)
 	}
 }

@@ -74,7 +74,7 @@ func TestGetUserByIdService(t *testing.T) {
 	}
 
 	if newUser != user {
-		t.Errorf("Expected User to be equal to New User but got %v", user)
+		t.Errorf("Expected User to be equal to NewUser but got %v", user)
 		return
 	}
 }
@@ -96,7 +96,7 @@ func TestUpdateUserService(t *testing.T) {
 	}
 
 	if newUser.Firstname != updatedFirstname {
-		t.Errorf("Expected New User firstname to equal updated firstname but got %s", newUser.Firstname)
+		t.Errorf("Expected NewUser firstname to equal updated firstname but got %s", newUser.Firstname)
 		return
 	}
 
@@ -118,6 +118,6 @@ func TestDeleteUserService(t *testing.T) {
 	}
 
 	if newUser.Id != userId {
-		t.Errorf("Expected New User id to equal User id but got %s", newUser.Id)
+		t.Errorf("Expected NewUser id to equal User id but got %s", newUser.Id)
 	}
 }
