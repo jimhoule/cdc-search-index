@@ -27,6 +27,7 @@ func Init(mainRouter *router.MainRouter, searchClient *searchclient.SearchClient
 		SearchService: searchService,
 	}
 
+	mainRouter.Get("/search/{index}", searchController.GetAllByIndex)
 	mainRouter.Get("/search/{index}/{documentId}", searchController.GetByDocumentId)
 
 	// Creates queue consumer handler

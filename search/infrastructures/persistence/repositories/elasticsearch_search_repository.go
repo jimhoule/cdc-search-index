@@ -12,13 +12,11 @@ type ElasticsearchSearchRepository[T any] struct {
 	SearchClient *searchclient.SearchClient
 }
 
-func (esr *ElasticsearchSearchRepository[T]) GetDocuments(index string, queryType string, key string, value string) ([]*T, error) {
+func (esr *ElasticsearchSearchRepository[T]) GetAllByIndex(index string) ([]*T, error) {
 	// Creates request body
-	query := map[string]interface{}{
-		"query": map[string]interface{}{
-			queryType: map[string]interface{}{
-				key: value,
-			},
+	query := map[string]any{
+		"query": map[string]any{
+			"match_all": map[string]any{},
 		},
 	}
 
@@ -49,16 +47,15 @@ func (esr *ElasticsearchSearchRepository[T]) GetDocuments(index string, queryTyp
 	}
 
 	// Gets slices of *T to return
-	bodies := []*T{}
+	views := []*T{}
 	for _, hit := range responseBody["hits"].(map[string]any)["hits"].([]any) {
-		//body := hit.(map[string]any)["_source"].(*T)
-		var body *T
-		transcode(hit.(map[string]any)["_source"], body)
+		var view T
+		transcode(hit.(map[string]any)["_source"], &view)
 
-		bodies = append(bodies, body)
+		views = append(views, &view)
 	}
 
-	return bodies, nil
+	return views, nil
 }
 
 func (esr *ElasticsearchSearchRepository[T]) GetByDocumentId(index string, documentId string) (*T, error) {

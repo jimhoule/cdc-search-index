@@ -1,7 +1,7 @@
 ### NOTE: To use this file VSC REST Client extension must be installed 
 
 ### Finds all Documents by index
-GET http://localhost:5000/search<index>
+GET http://localhost:5000/search/users
 
 ### Finds a Document by index and id
-GET http://localhost:5000/search/<index>/<document-id>
+GET http://localhost:5000/search/users/dca6febf-78db-4fa4-8c54-97fd1a8fb7d8

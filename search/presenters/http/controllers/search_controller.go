@@ -12,11 +12,25 @@ type SearchController[T any] struct {
 	SearchService *services.SearchService[T]
 }
 
+func (usc *SearchController[T]) GetAllByIndex(writer http.ResponseWriter, request *http.Request) {
+	index := router.GetUrlParam(request, "index")
+
+	views, err := usc.SearchService.GetAllByIndex(&payloads.GetByAllByIndexPayload{
+		Index: index,
+	})
+	if err != nil {
+		utils.WriteHttpError(writer, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteHttpResponse(writer, http.StatusOK, views)
+}
+
 func (usc *SearchController[T]) GetByDocumentId(writer http.ResponseWriter, request *http.Request) {
 	index := router.GetUrlParam(request, "index")
 	documentId := router.GetUrlParam(request, "documentId")
 
-	body, err := usc.SearchService.GetByDocumentId(&payloads.GetByDocumentIdPayload{
+	view, err := usc.SearchService.GetByDocumentId(&payloads.GetByDocumentIdPayload{
 		Index:      index,
 		DocumentId: documentId,
 	})
@@ -25,5 +39,5 @@ func (usc *SearchController[T]) GetByDocumentId(writer http.ResponseWriter, requ
 		return
 	}
 
-	utils.WriteHttpResponse(writer, http.StatusOK, body)
+	utils.WriteHttpResponse(writer, http.StatusOK, view)
 }

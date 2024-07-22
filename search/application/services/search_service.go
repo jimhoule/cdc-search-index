@@ -9,8 +9,17 @@ type SearchService[T any] struct {
 	SearchRepository ports.SearchRepositoryPort[T]
 }
 
+func (ss *SearchService[T]) GetAllByIndex(getAllByIndexPayload *payloads.GetByAllByIndexPayload) ([]*T, error) {
+	views, err := ss.SearchRepository.GetAllByIndex(getAllByIndexPayload.Index)
+	if err != nil {
+		return nil, err
+	}
+
+	return views, err
+}
+
 func (ss *SearchService[T]) GetByDocumentId(getByDocumentIdPayload *payloads.GetByDocumentIdPayload) (*T, error) {
-	body, err := ss.SearchRepository.GetByDocumentId(
+	view, err := ss.SearchRepository.GetByDocumentId(
 		getByDocumentIdPayload.Index,
 		getByDocumentIdPayload.DocumentId,
 	)
@@ -18,7 +27,7 @@ func (ss *SearchService[T]) GetByDocumentId(getByDocumentIdPayload *payloads.Get
 		return nil, err
 	}
 
-	return body, err
+	return view, err
 }
 
 func (ss *SearchService[T]) Create(createPayload *payloads.CreatePayload) (*T, error) {

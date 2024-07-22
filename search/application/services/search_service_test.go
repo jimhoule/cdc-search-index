@@ -42,7 +42,32 @@ func TestCreateSearchService(t *testing.T) {
 	}
 }
 
-func TestGetDocumentByIdSearchService(t *testing.T) {
+func TestGetAllByIndexSearchService(t *testing.T) {
+	searchService, reset, create := getTestContext()
+	defer reset()
+
+	newUserView, _ := create()
+
+	userViews, err := searchService.GetAllByIndex(&payloads.GetByAllByIndexPayload{
+		Index: "users",
+	})
+	if err != nil {
+		t.Errorf("Expected to get a UserViews by index but got %v", err)
+		return
+	}
+
+	if len(userViews) != 1 {
+		t.Errorf("Expected slice of UserViews with a length of 1 but got %d", len(userViews))
+		return
+	}
+
+	if *userViews[0] != *newUserView {
+		t.Errorf("Expected first UserView of slice to be equal to NewUserView but got %v", userViews[0])
+		return
+	}
+}
+
+func TestGetByDocumentIdSearchService(t *testing.T) {
 	searchService, reset, create := getTestContext()
 	defer reset()
 

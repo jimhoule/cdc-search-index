@@ -22,6 +22,22 @@ func ResetFakeSearchRepository() {
 	}
 }
 
+func (fsr *FakeSearchRepository[T]) GetAllByIndex(index string) ([]*T, error) {
+	// Checks if index exists
+	_, ok := documents[index]
+	if !ok {
+		return nil, fmt.Errorf("index %s does not exist", index)
+	}
+
+	views := []*T{}
+	for _, document := range documents[index] {
+		view := document.Body.(T)
+		views = append(views, &view)
+	}
+
+	return views, nil
+}
+
 func (fsr *FakeSearchRepository[T]) GetByDocumentId(index string, documentId string) (*T, error) {
 	// Checks if index exists
 	_, ok := documents[index]
@@ -32,8 +48,8 @@ func (fsr *FakeSearchRepository[T]) GetByDocumentId(index string, documentId str
 	for _, document := range documents[index] {
 		// Checks if document exists
 		if document.Id == documentId {
-			body := document.Body.(T)
-			return &body, nil
+			view := document.Body.(T)
+			return &view, nil
 		}
 	}
 
@@ -47,19 +63,19 @@ func (fsr *FakeSearchRepository[T]) Create(index string, documentId string, body
 		return nil, fmt.Errorf("index %s does not exist", index)
 	}
 
-	var decodedBody T
-	err := json.Unmarshal(body, &decodedBody)
+	var view T
+	err := json.Unmarshal(body, &view)
 	if err != nil {
 		return nil, fmt.Errorf("could not unmarshall body")
 	}
 
 	document := &Document{
 		Id:   documentId,
-		Body: decodedBody,
+		Body: view,
 	}
 	documents[index] = append(documents[index], document)
 
-	return &decodedBody, nil
+	return &view, nil
 }
 
 func (fsr *FakeSearchRepository[T]) Update(index string, documentId string, body []byte) (*T, error) {
@@ -72,14 +88,14 @@ func (fsr *FakeSearchRepository[T]) Update(index string, documentId string, body
 	for _, document := range documents[index] {
 		// Checks if document exists
 		if document.Id == documentId {
-			var decodedBody T
-			err := json.Unmarshal(body, &decodedBody)
+			var view T
+			err := json.Unmarshal(body, &view)
 			if err != nil {
 				return nil, fmt.Errorf("could not unmarshall body")
 			}
 
-			document.Body = decodedBody
-			return &decodedBody, nil
+			document.Body = view
+			return &view, nil
 		}
 	}
 
