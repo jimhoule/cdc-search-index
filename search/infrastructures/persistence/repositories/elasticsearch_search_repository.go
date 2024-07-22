@@ -80,10 +80,12 @@ func (esr *ElasticsearchSearchRepository[T]) GetByDocumentId(index string, docum
 	}
 
 	// NOTE: This transcoding trick allows us to use a generic type
+	// var body T
+	// var buffer bytes.Buffer
+	// json.NewEncoder(&buffer).Encode(responseBody["_source"])
+	// json.NewDecoder(&buffer).Decode(&body)
 	var body T
-	var buffer bytes.Buffer
-	json.NewEncoder(&buffer).Encode(responseBody["_source"])
-	json.NewDecoder(&buffer).Decode(&body)
+	transcode(responseBody["_source"], &body)
 
 	return &body, nil
 }
@@ -136,4 +138,10 @@ func (esr *ElasticsearchSearchRepository[T]) Delete(index string, documentId str
 	}
 
 	return nil
+}
+
+func transcode(in any, out any) {
+	var buffer bytes.Buffer
+	json.NewEncoder(&buffer).Encode(in)
+	json.NewDecoder(&buffer).Decode(out)
 }
