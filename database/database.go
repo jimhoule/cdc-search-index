@@ -19,7 +19,7 @@ func Get() *Db {
 	if db == nil {
 		connection, err := http.NewConnection(http.ConnectionConfig{
 			Endpoints: []string{
-				os.Getenv("DB_URL"), os.Getenv("DB_PORT"),
+				fmt.Sprintf("%s:%s", os.Getenv("DB_URL"), os.Getenv("DB_PORT")),
 			},
 		})
 		if err != nil {
