@@ -11,6 +11,7 @@ import (
 	"main/search/presenters/consumer/handlers"
 	"main/search/presenters/http/controllers"
 	"main/searchclient"
+	"os"
 )
 
 func Init(mainRouter *router.MainRouter, searchClient *searchclient.SearchClient) {
@@ -33,11 +34,17 @@ func Init(mainRouter *router.MainRouter, searchClient *searchclient.SearchClient
 		SearchService: searchService,
 	}
 
-	usersConsumerGroupHandler, err := queue.NewConsumerGroupHandler([]string{"localhost:9092"}, "users_consumer_group")
+	usersConsumerGroupHandler, err := queue.NewConsumerGroupHandler(
+		[]string{
+			fmt.Sprintf("%s:%s", os.Getenv("QUEUE_URL"), os.Getenv("QUEUE_PORT")),
+		},
+		"users_consumer_group_id",
+	)
 	if err != nil {
 		fmt.Println("error: ", err)
 	}
 
+	// Associates each handler to proper topic
 	usersConsumerGroupHandler.Handlers = map[string]queue.Handler{
 		topics.UserCreated: usersHandler.Create,
 		topics.UserUpdated: usersHandler.Update,
@@ -45,7 +52,13 @@ func Init(mainRouter *router.MainRouter, searchClient *searchclient.SearchClient
 	}
 
 	go func() {
-		err := usersConsumerGroupHandler.Listen([]string{topics.UserCreated, topics.UserUpdated, topics.UserDeleted})
+		err := usersConsumerGroupHandler.Listen(
+			[]string{
+				topics.UserCreated,
+				topics.UserUpdated,
+				topics.UserDeleted,
+			},
+		)
 		if err != nil {
 			fmt.Println("error: ", err)
 		}

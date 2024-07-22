@@ -10,6 +10,7 @@ import (
 	"main/users/infrastructures/persistence/repositories"
 	"main/users/presenters/http/controllers"
 	"main/uuid"
+	"os"
 )
 
 func GetService(db *database.Db) *services.UsersService {
@@ -24,7 +25,11 @@ func GetService(db *database.Db) *services.UsersService {
 }
 
 func Init(mainRouter *router.MainRouter, db *database.Db) {
-	queueProducerHandler, err := queue.NewProducerHandler([]string{"localhost:9092"})
+	queueProducerHandler, err := queue.NewProducerHandler(
+		[]string{
+			fmt.Sprintf("%s:%s", os.Getenv("QUEUE_URL"), os.Getenv("QUEUE_PORT")),
+		},
+	)
 	if err != nil {
 		fmt.Printf("error: %v", err)
 	}
