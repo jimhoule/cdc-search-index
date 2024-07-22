@@ -66,7 +66,7 @@ func (aur *ArangodbUsersRepository) Create(user *models.User) (*models.User, err
 		"key":       user.Id,
 		"id":        user.Id,
 		"firstname": user.Firstname,
-		"lastname":  user.LastName,
+		"lastname":  user.Lastname,
 	}
 
 	_, err := aur.Db.Client.Query(context.Background(), query, bindVars)
@@ -82,7 +82,7 @@ func (aur *ArangodbUsersRepository) Update(updatedUser *models.User) (*models.Us
 	bindVars := map[string]any{
 		"key":       updatedUser.Id,
 		"firstname": updatedUser.Firstname,
-		"lastname":  updatedUser.LastName,
+		"lastname":  updatedUser.Lastname,
 	}
 
 	_, err := aur.Db.Client.Query(context.Background(), query, bindVars)

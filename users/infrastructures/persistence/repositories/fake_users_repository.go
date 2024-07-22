@@ -37,7 +37,7 @@ func (*FakeUsersRepository) Update(updatedUser *models.User) (*models.User, erro
 	for _, user := range users {
 		if user.Id == updatedUser.Id {
 			user.Firstname = updatedUser.Firstname
-			user.LastName = updatedUser.LastName
+			user.Lastname = updatedUser.Lastname
 
 			return updatedUser, nil
 		}
@@ -49,7 +49,7 @@ func (*FakeUsersRepository) Update(updatedUser *models.User) (*models.User, erro
 func (*FakeUsersRepository) Delete(id string) (string, error) {
 	for index, user := range users {
 		if user.Id == id {
-			users = append(users[:index], users[index + 1:]...)
+			users = append(users[:index], users[index+1:]...)
 
 			return id, nil
 		}

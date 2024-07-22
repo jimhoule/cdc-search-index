@@ -20,7 +20,7 @@ func getTestContext() (*UsersService, func(), func() (*models.User, error)) {
 	createUser := func() (*models.User, error) {
 		return usersService.Create(&payloads.CreateUserPayload{
 			Firstname: "Dummy firstname",
-			Lastname: "Dummy lastname",
+			Lastname:  "Dummy lastname",
 		})
 	}
 
@@ -86,9 +86,9 @@ func TestUpdateUserService(t *testing.T) {
 	newUser, _ := createUser()
 
 	updatedFirstname := "Updated fake firstname"
-	user, err := usersService.Update(newUser.Id, &payloads.UpdateUserPayload{ 
+	user, err := usersService.Update(newUser.Id, &payloads.UpdateUserPayload{
 		Firstname: updatedFirstname,
-		LastName: newUser.LastName,
+		Lastname:  newUser.Lastname,
 	})
 	if err != nil {
 		t.Errorf("Expected User but got %v", err)

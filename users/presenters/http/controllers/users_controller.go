@@ -79,7 +79,7 @@ func (uc *UsersController) Update(writer http.ResponseWriter, request *http.Requ
 
 	user, err := uc.UsersService.Update(id, &payloads.UpdateUserPayload{
 		Firstname: updateUserDto.Firstname,
-		LastName:  updateUserDto.Lastname,
+		Lastname:  updateUserDto.Lastname,
 	})
 	if err != nil {
 		utils.WriteHttpError(writer, http.StatusInternalServerError, err)

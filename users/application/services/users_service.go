@@ -8,7 +8,7 @@ import (
 )
 
 type UsersService struct {
-	UsersFactory *factories.UsersFactory
+	UsersFactory    *factories.UsersFactory
 	UsersRepository ports.UsersRepositoryPorts
 }
 
@@ -31,9 +31,9 @@ func (us *UsersService) Create(createUserPayload *payloads.CreateUserPayload) (*
 
 func (us *UsersService) Update(id string, updateUserPayload *payloads.UpdateUserPayload) (*models.User, error) {
 	updatedUser := &models.User{
-		Id: id,
+		Id:        id,
 		Firstname: updateUserPayload.Firstname,
-		LastName: updateUserPayload.LastName,
+		Lastname:  updateUserPayload.Lastname,
 	}
 
 	return us.UsersRepository.Update(updatedUser)
