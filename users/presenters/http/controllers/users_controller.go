@@ -50,7 +50,7 @@ func (uc *UsersController) Create(writer http.ResponseWriter, request *http.Requ
 
 	user, err := uc.UsersService.Create(&payloads.CreateUserPayload{
 		Firstname: createUserDto.Firstname,
-		LastName:  createUserDto.Lastname,
+		Lastname:  createUserDto.Lastname,
 	})
 	if err != nil {
 		utils.WriteHttpError(writer, http.StatusInternalServerError, err)

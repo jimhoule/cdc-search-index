@@ -34,9 +34,10 @@ func (*FakeUsersRepository) Create(user *models.User) (*models.User, error) {
 }
 
 func (*FakeUsersRepository) Update(updatedUser *models.User) (*models.User, error) {
-	for index, user := range users {
+	for _, user := range users {
 		if user.Id == updatedUser.Id {
-			users[index] = updatedUser
+			user.Firstname = updatedUser.Firstname
+			user.LastName = updatedUser.LastName
 
 			return updatedUser, nil
 		}

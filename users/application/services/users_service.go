@@ -23,7 +23,7 @@ func (us *UsersService) GetById(id string) (*models.User, error) {
 func (us *UsersService) Create(createUserPayload *payloads.CreateUserPayload) (*models.User, error) {
 	user := us.UsersFactory.Create(
 		createUserPayload.Firstname,
-		createUserPayload.LastName,
+		createUserPayload.Lastname,
 	)
 
 	return us.UsersRepository.Create(user)
