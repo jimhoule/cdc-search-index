@@ -61,8 +61,8 @@ func (uh *UsersHandler[T]) Update(body []byte) error {
 
 func (uh *UsersHandler[T]) Delete(body []byte) error {
 	// Gets body
-	var deleteUserDto dtos.DeleteUserDto
-	err := json.Unmarshal(body, &deleteUserDto)
+	var deletedUserId string
+	err := json.Unmarshal(body, &deletedUserId)
 	if err != nil {
 		fmt.Println("error: ", err)
 		return err
@@ -71,7 +71,7 @@ func (uh *UsersHandler[T]) Delete(body []byte) error {
 	// Deletes user document
 	err = uh.SearchService.Delete(&payloads.DeletePayload{
 		Index:      "users",
-		DocumentId: deleteUserDto.Id,
+		DocumentId: deletedUserId,
 	})
 	if err != nil {
 		fmt.Println("error: ", err)
