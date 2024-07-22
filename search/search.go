@@ -3,6 +3,7 @@ package search
 import (
 	"fmt"
 	"main/queue"
+	"main/queue/topics"
 	"main/router"
 	"main/search/application/services"
 	"main/search/domain/views"
@@ -38,13 +39,13 @@ func Init(mainRouter *router.MainRouter, searchClient *searchclient.SearchClient
 	}
 
 	usersConsumerGroupHandler.Handlers = map[string]queue.Handler{
-		"user.created": usersHandler.Create,
-		"user.updated": usersHandler.Update,
-		"user.deleted": usersHandler.Delete,
+		topics.UserCreated: usersHandler.Create,
+		topics.UserUpdated: usersHandler.Update,
+		topics.UserDeleted: usersHandler.Delete,
 	}
 
 	go func() {
-		err := usersConsumerGroupHandler.Listen([]string{"user.created", "user.updated", "user.deleted"})
+		err := usersConsumerGroupHandler.Listen([]string{topics.UserCreated, topics.UserUpdated, topics.UserDeleted})
 		if err != nil {
 			fmt.Println("error: ", err)
 		}

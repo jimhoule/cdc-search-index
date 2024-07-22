@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"main/queue"
+	"main/queue/topics"
 	"main/router"
 	"main/router/utils"
 	"main/users/application/payloads"
@@ -63,7 +64,7 @@ func (uc *UsersController) Create(writer http.ResponseWriter, request *http.Requ
 		fmt.Println("error sending created user to queue: ", err)
 	}
 
-	uc.QueueProducerHandler.SendMessage("user.created", jsonEncodedUser)
+	uc.QueueProducerHandler.SendMessage(topics.UserCreated, jsonEncodedUser)
 }
 
 func (uc *UsersController) Update(writer http.ResponseWriter, request *http.Request) {
@@ -92,7 +93,7 @@ func (uc *UsersController) Update(writer http.ResponseWriter, request *http.Requ
 		fmt.Println("error sending updated user to queue: ", err)
 	}
 
-	uc.QueueProducerHandler.SendMessage("user.updated", jsonEncodedUser)
+	uc.QueueProducerHandler.SendMessage(topics.UserUpdated, jsonEncodedUser)
 }
 
 func (uc *UsersController) Delete(writer http.ResponseWriter, request *http.Request) {
@@ -111,5 +112,5 @@ func (uc *UsersController) Delete(writer http.ResponseWriter, request *http.Requ
 		fmt.Println("error sending deleted user id to queue: ", err)
 	}
 
-	uc.QueueProducerHandler.SendMessage("user.deleted", jsonEncodedUserId)
+	uc.QueueProducerHandler.SendMessage(topics.UserDeleted, jsonEncodedUserId)
 }
