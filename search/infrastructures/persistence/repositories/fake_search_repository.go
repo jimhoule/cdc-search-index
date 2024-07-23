@@ -3,6 +3,7 @@ package repositories
 import (
 	"encoding/json"
 	"fmt"
+	"main/search/domain/indices"
 )
 
 type FakeSearchRepository[T any] struct{}
@@ -13,12 +14,12 @@ type Document struct {
 }
 
 var documents map[string][]*Document = map[string][]*Document{
-	"users": {},
+	indices.UsersIndex: {},
 }
 
 func ResetFakeSearchRepository() {
 	documents = map[string][]*Document{
-		"users": {},
+		indices.UsersIndex: {},
 	}
 }
 

@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"main/search/application/payloads"
+	"main/search/domain/indices"
 	"main/search/domain/views"
 	"main/search/infrastructures/persistence/repositories"
 	"testing"
@@ -22,7 +23,7 @@ func getTestContext() (*SearchService[views.UserView], func(), func() (*views.Us
 
 	create := func() (*views.UserView, error) {
 		return searchService.Create(&payloads.CreatePayload{
-			Index:      "users",
+			Index:      indices.UsersIndex,
 			DocumentId: userView.Id,
 			Body:       body,
 		})
@@ -49,7 +50,7 @@ func TestGetAllByIndexSearchService(t *testing.T) {
 	newUserView, _ := create()
 
 	userViews, err := searchService.GetAllByIndex(&payloads.GetByAllByIndexPayload{
-		Index: "users",
+		Index: indices.UsersIndex,
 	})
 	if err != nil {
 		t.Errorf("Expected to get a UserViews by index but got %v", err)
@@ -74,7 +75,7 @@ func TestGetByDocumentIdSearchService(t *testing.T) {
 	newUserView, _ := create()
 
 	userView, err := searchService.GetByDocumentId(&payloads.GetByDocumentIdPayload{
-		Index:      "users",
+		Index:      indices.UsersIndex,
 		DocumentId: newUserView.Id,
 	})
 	if err != nil {
@@ -102,7 +103,7 @@ func TestUpdateSearchService(t *testing.T) {
 	body, _ := json.Marshal(updatedUserView)
 
 	userView, err := searchService.Update(&payloads.UpdatePayload{
-		Index:      "users",
+		Index:      indices.UsersIndex,
 		DocumentId: newUserView.Id,
 		Body:       body,
 	})
@@ -123,7 +124,7 @@ func TestDeleteSearchService(t *testing.T) {
 	newUserView, _ := create()
 
 	userViewId, err := searchService.Delete(&payloads.DeletePayload{
-		Index:      "users",
+		Index:      indices.UsersIndex,
 		DocumentId: newUserView.Id,
 	})
 	if err != nil {

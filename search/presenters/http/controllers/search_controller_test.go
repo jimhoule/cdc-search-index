@@ -6,6 +6,7 @@ import (
 	"main/router/mock"
 	"main/search/application/payloads"
 	"main/search/application/services"
+	"main/search/domain/indices"
 	"main/search/domain/views"
 	"main/search/infrastructures/persistence/repositories"
 	"net/http"
@@ -29,7 +30,7 @@ func getTestContext() (*SearchController[views.UserView], func(), func() (*views
 
 	create := func() (*views.UserView, error) {
 		return searchController.SearchService.Create(&payloads.CreatePayload{
-			Index:      "users",
+			Index:      indices.UsersIndex,
 			DocumentId: userView.Id,
 			Body:       body,
 		})
@@ -45,7 +46,7 @@ func TestGetAllByIndexSearchController(t *testing.T) {
 	newUserView, _ := create()
 
 	// Creates request
-	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/search/%s", "users"), nil)
+	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/search/%s", indices.UsersIndex), nil)
 	if err != nil {
 		t.Errorf("Expected to create a request but got %v", err)
 		return
@@ -53,7 +54,7 @@ func TestGetAllByIndexSearchController(t *testing.T) {
 
 	// NOTE: Adds chi URL params context to request
 	urlParams := map[string]string{
-		"index": "users",
+		"index": indices.UsersIndex,
 	}
 	request = mock.GetRequestWithUrlParams(request, urlParams)
 
@@ -91,7 +92,7 @@ func TestGetByDocumentIdSearchController(t *testing.T) {
 	newUserView, _ := create()
 
 	// Creates request
-	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/search/%s/%s", "users", newUserView.Id), nil)
+	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/search/%s/%s", indices.UsersIndex, newUserView.Id), nil)
 	if err != nil {
 		t.Errorf("Expected to create a request but got %v", err)
 		return
@@ -99,7 +100,7 @@ func TestGetByDocumentIdSearchController(t *testing.T) {
 
 	// NOTE: Adds chi URL params context to request
 	urlParams := map[string]string{
-		"index": "users",
+		"index": indices.UsersIndex,
 		"documentId": newUserView.Id,
 	}
 	request = mock.GetRequestWithUrlParams(request, urlParams)

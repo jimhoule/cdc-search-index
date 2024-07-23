@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"main/search/application/payloads"
 	"main/search/application/services"
+	"main/search/domain/indices"
 	"main/search/presenters/consumer/dtos"
 )
 
@@ -23,7 +24,7 @@ func (uh *UsersHandler[T]) Create(body []byte) error {
 
 	// Creates user document
 	_, err = uh.SearchService.Create(&payloads.CreatePayload{
-		Index:      "users",
+		Index:      indices.UsersIndex,
 		DocumentId: createUserDto.Id,
 		Body:       body,
 	})
@@ -47,7 +48,7 @@ func (uh *UsersHandler[T]) Update(body []byte) error {
 
 	// Updates user document
 	_, err = uh.SearchService.Update(&payloads.UpdatePayload{
-		Index:      "users",
+		Index:      indices.UsersIndex,
 		DocumentId: updateUserDto.Id,
 		Body:       body,
 	})
@@ -70,7 +71,7 @@ func (uh *UsersHandler[T]) Delete(body []byte) error {
 
 	// Deletes user document
 	_, err = uh.SearchService.Delete(&payloads.DeletePayload{
-		Index:      "users",
+		Index:      indices.UsersIndex,
 		DocumentId: deletedUserId,
 	})
 	if err != nil {
