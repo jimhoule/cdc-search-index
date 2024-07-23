@@ -11,8 +11,8 @@ POST http://localhost:5000/users
 Content-Type: application/json
 
 {
-    "firstname": "Marc",
-    "lastname": "Laurin"
+    "firstname": "firstname",
+    "lastname": "lastname"
 }
 
 ### Updates a User
