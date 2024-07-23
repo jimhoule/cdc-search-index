@@ -41,7 +41,7 @@ func getTestContext() (*UsersController, func(), func() (*models.User, error)) {
 	return usersController, repositories.ResetFakeUsersRepository, createUser
 }
 
-func TestCreateUserController(t *testing.T) {
+func TestCreateUsersController(t *testing.T) {
 	usersController, reset, _ := getTestContext()
 	defer reset()
 
@@ -115,7 +115,7 @@ func TestGetAllUsersController(t *testing.T) {
 	}
 }
 
-func TestGetUserByIdController(t *testing.T) {
+func TestGetByIdUsersController(t *testing.T) {
 	usersController, reset, createUser := getTestContext()
 	defer reset()
 
@@ -161,7 +161,7 @@ func TestGetUserByIdController(t *testing.T) {
 	}
 }
 
-func TestUpdateUpdateController(t *testing.T) {
+func TestUpdateUsersController(t *testing.T) {
 	usersController, reset, createUser := getTestContext()
 	defer reset()
 
@@ -222,7 +222,7 @@ func TestUpdateUpdateController(t *testing.T) {
 	}
 }
 
-func TestDeleteUserController(t *testing.T) {
+func TestDeleteUsersController(t *testing.T) {
 	usersController, reset, createUser := getTestContext()
 	defer reset()
 

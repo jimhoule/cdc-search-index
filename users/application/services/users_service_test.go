@@ -27,7 +27,7 @@ func getTestContext() (*UsersService, func(), func() (*models.User, error)) {
 	return usersService, repositories.ResetFakeUsersRepository, createUser
 }
 
-func TestCreateUserService(t *testing.T) {
+func TestCreateUsersService(t *testing.T) {
 	_, reset, createUser := getTestContext()
 	defer reset()
 
@@ -61,7 +61,7 @@ func TestGetAllUsersService(t *testing.T) {
 	}
 }
 
-func TestGetUserByIdService(t *testing.T) {
+func TestGetByIdUsersService(t *testing.T) {
 	usersService, reset, createUser := getTestContext()
 	defer reset()
 
@@ -79,7 +79,7 @@ func TestGetUserByIdService(t *testing.T) {
 	}
 }
 
-func TestUpdateUserService(t *testing.T) {
+func TestUpdateUsersService(t *testing.T) {
 	usersService, reset, createUser := getTestContext()
 	defer reset()
 
@@ -105,7 +105,7 @@ func TestUpdateUserService(t *testing.T) {
 	}
 }
 
-func TestDeleteUserService(t *testing.T) {
+func TestDeleteUsersService(t *testing.T) {
 	usersService, reset, createUser := getTestContext()
 	defer reset()
 
