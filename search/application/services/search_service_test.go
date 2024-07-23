@@ -116,7 +116,7 @@ func TestUpdateSearchService(t *testing.T) {
 	}
 }
 
-func TestDeleteUserService(t *testing.T) {
+func TestDeleteSearchService(t *testing.T) {
 	searchService, reset, create := getTestContext()
 	defer reset()
 
